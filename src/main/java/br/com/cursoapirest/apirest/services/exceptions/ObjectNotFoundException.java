@@ -1,2 +1,7 @@
-package br.com.cursoapirest.apirest.services.exceptions;public class ObjectNotFoundException {
+package br.com.cursoapirest.apirest.services.exceptions;
+
+public class ObjectNotFoundException extends RuntimeException{
+    public ObjectNotFoundException(String message){
+        super(message);
+    }
 }
