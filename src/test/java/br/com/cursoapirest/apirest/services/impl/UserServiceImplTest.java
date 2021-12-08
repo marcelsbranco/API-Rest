@@ -3,6 +3,7 @@ package br.com.cursoapirest.apirest.services.impl;
 import br.com.cursoapirest.apirest.domain.User;
 import br.com.cursoapirest.apirest.domain.userDTO.UserDTO;
 import br.com.cursoapirest.apirest.repositories.UserRepository;
+import br.com.cursoapirest.apirest.services.exceptions.ObjectNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -12,10 +13,12 @@ import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class UserServiceImplTest {
@@ -44,22 +47,49 @@ class UserServiceImplTest {
 
     @Test
     void deveRetornarUsuarioPorId() {
-        Mockito.when(repository.findById(Mockito.anyInt())).thenReturn(optionalUser);
+        when(repository.findById(Mockito.anyInt())).thenReturn(optionalUser);
 
         User response = service.findById(ID);
 
         assertNotNull(response);
         assertEquals(User.class, response.getClass());
         assertEquals(ID, response.getId());
-        
+
     }
 
     @Test
-    void findAll() {
+    void deveRetornarExcecaoDoMetodoFindById(){
+        when(repository.findById(ID)).thenThrow(new ObjectNotFoundException("Objeto não encontrado"));
+
+        try {
+            service.findById(ID);
+        }catch (Exception exception){
+            assertEquals(ObjectNotFoundException.class, exception.getClass());
+            assertEquals("Objeto não encontrado", exception.getMessage());
+        }
+    }
+
+
+    @Test
+    void deveRetornarListaDeusuarios() {
+        when(repository.findAll()).thenReturn(List.of(user));
+
+        List<User> response = service.findAll();
+
+        assertNotNull(response);
+        assertEquals(1, response.size());
+        assertEquals(User.class, response.get(0).getClass());
     }
 
     @Test
-    void create() {
+    void deveRetornarUsuarioCriado() {
+        when(repository.save(Mockito.any())).thenReturn(user);
+
+       User response = service.create(userDTO);
+
+        assertNotNull(response);
+        assertEquals(User.class, response.getClass());
+        assertEquals(1, response.getId());
     }
 
     @Test
