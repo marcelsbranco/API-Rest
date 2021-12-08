@@ -144,7 +144,7 @@ class UserServiceImplTest {
         try {
             service.delete(1);
         }catch (Exception exception){
-            assertEquals(ObjectNotFoundException.class, exception.getClass()]);
+            assertEquals(ObjectNotFoundException.class, exception.getClass());
         }
     }
 
