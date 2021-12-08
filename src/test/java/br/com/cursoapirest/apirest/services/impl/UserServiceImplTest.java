@@ -3,6 +3,7 @@ package br.com.cursoapirest.apirest.services.impl;
 import br.com.cursoapirest.apirest.domain.User;
 import br.com.cursoapirest.apirest.domain.userDTO.UserDTO;
 import br.com.cursoapirest.apirest.repositories.UserRepository;
+import br.com.cursoapirest.apirest.services.exceptions.DataIntegratyViolationException;
 import br.com.cursoapirest.apirest.services.exceptions.ObjectNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 class UserServiceImplTest {
@@ -93,11 +94,58 @@ class UserServiceImplTest {
     }
 
     @Test
-    void update() {
+    void deveRetornarException(){
+        when(repository.findByEmail(Mockito.any())).thenReturn(optionalUser);
+
+        try {
+            optionalUser.get().setId(2);
+            service.create(userDTO);
+        }catch (Exception exception){
+            assertEquals(DataIntegratyViolationException.class, exception.getClass());
+            assertEquals("Email já cadastrado", exception.getMessage());
+        }
     }
 
     @Test
-    void delete() {
+    void deveRetornarUsuarioAtualizado() {
+        when(repository.save(Mockito.any())).thenReturn(user);
+
+        User response = service.update(userDTO);
+
+        assertNotNull(response);
+        assertEquals(User.class, response.getClass());
+        assertEquals(1, response.getId());
+    }
+
+    @Test
+    void deveRetornarExceptionAoAtualizar(){
+        when(repository.findByEmail(Mockito.any())).thenReturn(optionalUser);
+
+        try {
+            optionalUser.get().setId(2);
+            service.update(userDTO);
+        }catch (Exception exception){
+            assertEquals(DataIntegratyViolationException.class, exception.getClass());
+            assertEquals("Email já cadastrado", exception.getMessage());
+        }
+    }
+
+    @Test
+    void deveDeletarUsuario() {
+        when(repository.findById(Mockito.anyInt())).thenReturn(optionalUser);
+        doNothing().when(repository).deleteById(anyInt());
+        service.delete(1);
+        verify(repository, times(1)).deleteById(anyInt());
+    }
+
+    @Test
+    void deveRetornarErroAoDeletar(){
+        when(repository.findById(anyInt())).thenThrow(new ObjectNotFoundException("Objeto não encontrado"));
+        try {
+            service.delete(1);
+        }catch (Exception exception){
+            assertEquals(ObjectNotFoundException.class, exception.getClass()]);
+        }
     }
 
     private void startUser(){
